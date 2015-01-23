@@ -1,15 +1,19 @@
 ﻿//#define DEBUG_TOUCHES
 
 using UnityEngine;
+using System;
 using System.Collections;
 
-namespace Handler
+namespace Handlers
 {
 	using Extensions;
 	using TouchEvent = System.Action<UnityEngine.Touch>;
 
 	public class TouchHandler : MonoBehaviour 
 	{
+		// global instance
+		public static TouchHandler Instance { get; private set; }
+
 		// events
 		public event TouchEvent OnTouchBegun;
 		public event TouchEvent OnTouchMoved;
@@ -24,6 +28,9 @@ namespace Handler
 
 		private void Awake ()
 		{
+			// set instance
+			TouchHandler.Instance = this;
+
 			// assert
 			this.Assert<TouchEvent>(this.OnTouchBegun, "OnTouchBegun event is null.");
 			this.Assert<TouchEvent>(this.OnTouchMoved, "OnTouchMoved event is null.");
