@@ -12,7 +12,7 @@ public class UIManager : MonoBehaviour
 		{ TapType.Hammer, Player.Player1 },
 		{ TapType.Move, Player.Player1 },
 		{ TapType.Pale, Player.Player1 },
-		{ TapType.Patch, Player.Player1 },
+		{ TapType.Stitch, Player.Player1 },
 	};
 
 	private void Start ()
@@ -20,6 +20,16 @@ public class UIManager : MonoBehaviour
 		this.Assert<List<PlayerButton>>(m_buttons, "ERROR: m_buttons is null!");
 		this.UpdateButton(this.Buttons(Player.Player1), true);
 		this.UpdateButton(this.Buttons(Player.Player2), false);
+	}
+
+	public Player HasAbility (TapType p_type)
+	{
+		return m_abilities[p_type];
+	}
+
+	public bool HasAbility (TapType p_type, Player p_player)
+	{
+		return this.HasAbility(p_type) == p_player;
 	}
 
 	[Signal]
