@@ -143,6 +143,7 @@ public class GameLogic : MonoBehaviour
 
 	public Hazard AddHazardOnShip (Hazard p_hazard)
 	{
+		p_hazard.transform.parent = m_boat.transform;
 		m_damages.Add(p_hazard);
 
 		//hazard.transform.position = m_holePositions[UnityEngine.Random.Range(0, m_holePositions.Count)].position;

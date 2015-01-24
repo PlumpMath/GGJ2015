@@ -6,15 +6,15 @@ using Extensions;
 
 public class BallSpawner : MonoBehaviour 
 {
-	public static readonly float EASY_SPAWN 	= 80f;
+	public static readonly float EASY_SPAWN 	= 100f;
 	public static readonly float MEDIUM_SPAWN	= 15f;
 	public static readonly float HARD_SPAWN 	= 10f;
 
 	public static readonly int MIN_THROWN = 1;
 	public static readonly int MAX_THROWN = 3;
 
-	public static readonly float MIN_SPAWN_INTERVAL = 4f;
-	public static readonly float MAX_SPAWN_INTERVAL = 8f;
+	public static readonly float MIN_SPAWN_INTERVAL = 10f;
+	public static readonly float MAX_SPAWN_INTERVAL = 20f;
 
 	// spawner position
 	public static readonly Vector2 SPAWN_POSITION = new Vector2(1.137217f, -0.6044912f);
