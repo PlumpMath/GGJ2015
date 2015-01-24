@@ -46,7 +46,7 @@ public class GameLogic : MonoBehaviour
 		m_holes.Add(hole);
 
 		// randomize positions
-		hole.transform.parent = m_boat.transform.parent.transform;
+		hole.transform.parent = m_boat.transform;
 		hole.transform.position = m_holePositions[UnityEngine.Random.Range(0, m_holePositions.Count)].position;
 		hole.OnDestroy += this.OnHoleDestroy;
 		hole.OnTapEvent += this.OnTap;
