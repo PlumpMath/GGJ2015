@@ -118,7 +118,7 @@ public class GameLogic : MonoBehaviour
 
 	private List<Hazard> GetDamageAtSide (List<Hazard> p_holes, Side p_side)
 	{
-		Predicate<Hazard> massCondition = new Predicate<Hazard>(h => h.SideLocation == p_side);
+		Predicate<Hazard> massCondition = new Predicate<Hazard>(h => h.LocalSideLocation == p_side);
 		return p_holes.FindAll(massCondition);
 	}
 
@@ -164,8 +164,8 @@ public class GameLogic : MonoBehaviour
 		switch(p_damage.TapType)
 		{
 		case TapType.Hammer:
-			List<Hazard> holesAtSide = this.GetDamageAtSide(activeHazards, p_damage.SideLocation);
-			m_boat.AdjustMass(p_damage.SideLocation, holesAtSide.Count);
+			List<Hazard> holesAtSide = this.GetDamageAtSide(activeHazards, p_damage.LocalSideLocation);
+			m_boat.AdjustMass(p_damage.LocalSideLocation, holesAtSide.Count);
 			this.AdjustSeaLevel(activeHazards.Count);
 			break;
 		case TapType.Stitch:

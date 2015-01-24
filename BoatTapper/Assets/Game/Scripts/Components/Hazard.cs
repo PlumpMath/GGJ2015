@@ -61,11 +61,34 @@ public class Hazard : MonoBehaviour
 		get { return m_isActive; }
 	}
 
-	public Side SideLocation
+	/// <summary>
+	/// Gets which side the Hazard is on the boat.
+	/// </summary>
+	/// <value>The local side location.</value>
+	public Side LocalSideLocation
 	{
 		get
 		{
 			if (transform.localPosition.x < 0)
+			{
+				return Side.Left;
+			}
+			else
+			{
+				return Side.Right;
+			}
+		}
+	}
+
+	/// <summary>
+	/// Gets which side the Hazard is on the view. Left is for Player1 and Right is for Player2.
+	/// </summary>
+	/// <value>The world side location.</value>
+	public Side WorldSideLocation
+	{
+		get
+		{
+			if (transform.position.x < 0)
 			{
 				return Side.Left;
 			}
