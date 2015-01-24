@@ -14,7 +14,7 @@ public class GameLogic : MonoBehaviour
 	[SerializeField]
 	private Hole m_holeTemplate;
 	[SerializeField]
-	private GameObject m_boat;
+	private Boat m_boat;
 
 	[SerializeField]
 	private List<Transform> m_holePositions;
@@ -25,7 +25,7 @@ public class GameLogic : MonoBehaviour
 	{
 		m_holes = new List<Hole>();
 		this.Assert<Hole>(m_holeTemplate, "ERROR: m_holeTemplate must be initialize!");
-		this.Assert<GameObject>(m_boat, "ERROR: m_boat must be initialize!");
+		this.Assert<Boat>(m_boat, "ERROR: m_boat must be initialize!");
 	}
 
 	private void Update ()
@@ -46,10 +46,14 @@ public class GameLogic : MonoBehaviour
 		m_holes.Add(hole);
 
 		// randomize positions
-		hole.transform.parent = m_boat.transform;
+		hole.transform.parent = m_boat.gameObject.transform;
 		hole.transform.position = m_holePositions[UnityEngine.Random.Range(0, m_holePositions.Count)].position;
+		hole.transform.rotation = Quaternion.identity;
 		hole.OnDestroy += this.OnHoleDestroy;
 		hole.OnTapEvent += this.OnTap;
+
+		// sink the pakking boat
+		m_boat.AdjustMass(hole.MassHole);
 
 		return hole;
 	}

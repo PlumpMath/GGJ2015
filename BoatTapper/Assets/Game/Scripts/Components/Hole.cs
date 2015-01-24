@@ -36,6 +36,21 @@ public class Hole : MonoBehaviour
 		set { m_numberOfTaps = value; }
 	}
 
+	public Mass MassHole
+	{
+		get
+		{
+			if (transform.localPosition.x < 0)
+			{
+				return Mass.Left;
+			}
+			else
+			{
+				return Mass.Right;
+			}
+		}
+	}
+
 	[Signal]
 	private void OnTriggerTap (TapTrigger p_tap)
 	{
