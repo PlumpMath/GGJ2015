@@ -7,11 +7,17 @@ using Extensions;
 public class UIManager : MonoBehaviour 
 {
 	[SerializeField] private List<PlayerButton> m_buttons;
+	private Dictionary<TapType, Player> m_abilities = new Dictionary<TapType, Player>()
+	{
+		{ TapType.Hammer, Player.Player1 },
+		{ TapType.Move, Player.Player1 },
+		{ TapType.Pale, Player.Player1 },
+		{ TapType.Patch, Player.Player1 },
+	};
 
 	private void Start ()
 	{
 		this.Assert<List<PlayerButton>>(m_buttons, "ERROR: m_buttons is null!");
-
 		this.UpdateButton(this.Buttons(Player.Player1), true);
 		this.UpdateButton(this.Buttons(Player.Player2), false);
 	}
@@ -20,6 +26,16 @@ public class UIManager : MonoBehaviour
 	private void OnPressedButton (PlayerButton p_button)
 	{
 		this.Log("UIManager::OnPressedButton", "Player:{0} Action:{1}", p_button.Player, p_button.TapType);
+
+		if (!p_button.IsEnabled) { return; }
+
+		p_button.IsEnabled = false;
+
+		Player otherPlayerId = p_button.Player == Player.Player1 ? Player.Player2 : Player.Player1;
+		PlayerButton otherPlayer = this.Button(otherPlayerId, p_button.TapType);
+		otherPlayer.IsEnabled = true;
+
+		m_abilities[p_button.TapType] = otherPlayerId;
 	}
 
 	private List<PlayerButton> Buttons (Player p_player)
