@@ -13,6 +13,8 @@ public class GameLogic : MonoBehaviour
 	// template
 	[SerializeField]
 	private Hole m_holeTemplate;
+	[SerializeField]
+	private GameObject m_boat;
 
 	[SerializeField]
 	private List<Transform> m_holePositions;
@@ -22,6 +24,8 @@ public class GameLogic : MonoBehaviour
 	private void Start ()
 	{
 		m_holes = new List<Hole>();
+		this.Assert<Hole>(m_holeTemplate, "ERROR: m_holeTemplate must be initialize!");
+		this.Assert<GameObject>(m_boat, "ERROR: m_boat must be initialize!");
 	}
 
 	private void Update ()
@@ -42,6 +46,7 @@ public class GameLogic : MonoBehaviour
 		m_holes.Add(hole);
 
 		// randomize positions
+		hole.transform.parent = m_boat.transform.parent.transform;
 		hole.transform.position = m_holePositions[UnityEngine.Random.Range(0, m_holePositions.Count)].position;
 		hole.OnDestroy += this.OnHoleDestroy;
 		hole.OnTapEvent += this.OnTap;
@@ -57,6 +62,6 @@ public class GameLogic : MonoBehaviour
 
 	private void OnTap (TapType p_type)
 	{
-		this.Log("GameLog::OnTap", "tap:{0}", p_type);
+		this.Log("GameLog::OnTap", "tap:{0}", p_type); 
 	}
 }
