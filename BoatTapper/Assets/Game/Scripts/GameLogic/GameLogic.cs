@@ -9,8 +9,9 @@ public class GameLogic : MonoBehaviour
 	public static readonly float EASY_INTERVAL = 10.0f;
 	public static readonly float MEDIUM_INTERVAL = 7.0f;
 	public static readonly float HARD_INTERVAL = 4.0f;
-	public static readonly Vector2 UNIT_SEA_LEVEL = new Vector2(0.0f, 0.1f);
+	public static readonly Vector2 UNIT_SEA_LEVEL = new Vector2(0.0f, 0.05f);
 	public static readonly int NUMBER_OF_HOLES = 3;
+	public static readonly int HOLE_LIMIT = 10;
 
 	// template
 	[SerializeField]
@@ -25,7 +26,7 @@ public class GameLogic : MonoBehaviour
 	private List<Hole> m_holes;
 	private float m_interval;
 	private Vector2 m_defaultSeaLevel;
-	private Vector2 m_targetSeaLevel;
+	[SerializeField] private Vector2 m_targetSeaLevel;
 
 	private void Start ()
 	{
@@ -52,7 +53,11 @@ public class GameLogic : MonoBehaviour
 
 	private void FixedUpdate ()
 	{
-		m_seaLevel.position = Vector2.Lerp(m_seaLevel.position, m_targetSeaLevel, Time.deltaTime * 0.5f);
+		//Vector2 seaLevelPos = Vector2.Lerp(m_seaLevel.position, m_targetSeaLevel, Time.deltaTime);
+		//m_seaLevel.Translate( new Vector3(seaLevelPos.x, seaLevelPos.y, 0));
+		m_seaLevel.transform.position  = (Vector2.MoveTowards(new Vector2(m_seaLevel.position.x, m_seaLevel.position.y), m_targetSeaLevel, 0.1f * Time.deltaTime));
+
+		//m_seaLevel.rigidbody2D.velocity = ( m_targetSeaLevel - new Vector2(m_seaLevel.position.x, m_seaLevel.position.y )) * Time.deltaTime;
 	}
 
 	private int NumHolesAt (Mass p_mass)
@@ -63,8 +68,11 @@ public class GameLogic : MonoBehaviour
 
 	private void AdjustSeaLevel (int p_holes)
 	{
-		m_targetSeaLevel = m_defaultSeaLevel - (UNIT_SEA_LEVEL * p_holes);
-		m_targetSeaLevel.x = 0f;
+		//if(0 <= p_holes && p_holes < HOLE_LIMIT)
+		{
+			m_targetSeaLevel = m_defaultSeaLevel - (UNIT_SEA_LEVEL * p_holes);
+			m_targetSeaLevel.x = 0f;
+		}
 	}
 
 	private Hole CreateHole ()
