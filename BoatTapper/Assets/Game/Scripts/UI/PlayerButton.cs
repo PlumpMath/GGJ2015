@@ -38,6 +38,6 @@ public class PlayerButton : MonoBehaviour
 	public bool IsEnabled 
 	{
 		get { return m_isEnabled; }
-		private set { m_isEnabled = value; }
+		set { m_isEnabled = value; }
 	}
 }

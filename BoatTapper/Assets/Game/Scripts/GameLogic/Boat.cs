@@ -28,6 +28,7 @@ public class Boat : MonoBehaviour
 	{
 		this.UpdateMass(Mass.Left);
 		this.UpdateMass(Mass.Right);
+		transform.position = Vector3.Lerp( transform.position, new Vector3(0, transform.position.y, transform.position.z), Time.deltaTime);
 	}
 
 	private void UpdateMass (Mass p_mass)
