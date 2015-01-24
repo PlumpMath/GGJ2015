@@ -3,10 +3,21 @@ using System;
 using System.Collections;
 using Extensions;
 
+public enum TapType
+{
+	Patch,
+	Hammer,
+	Move,
+	Pale,
+	Stitch,
+}
+
 public class Hole : MonoBehaviour 
 {
 	public Action<Hole> OnDestroy;
 
+	[SerializeField]
+	private TapType m_type;
 	[SerializeField]
 	private int m_numberOfTaps;
 
