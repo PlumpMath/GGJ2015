@@ -14,12 +14,13 @@ public enum TapType
 
 public class Hole : MonoBehaviour 
 {
+	public Action<TapType> OnTapEvent;
 	public Action<Hole> OnDestroy;
 
 	[SerializeField]
-	private TapType m_type;
-	[SerializeField]
 	private int m_numberOfTaps;
+	//[SerializeField]
+	//private TapType m_type;
 
 	private void Awake ()
 	{
@@ -35,19 +36,23 @@ public class Hole : MonoBehaviour
 		set { m_numberOfTaps = value; }
 	}
 
-	private void OnTap ()
+	[Signal]
+	private void OnTriggerTap (TapTrigger p_tap)
 	{
 		if (m_numberOfTaps <= 0) 
 		{ 
 			this.Destroy();
 			return; 
 		}
-
+		
 		m_numberOfTaps--;
-
-		this.Log("GamePlay::OnTap", "taps:{0}", m_numberOfTaps);
+		
+		if (this.OnTapEvent != null)
+		{
+			this.OnTapEvent(p_tap.TapType);
+		}
 	}
-
+	
 	private void Destroy ()
 	{
 		if (this.OnDestroy == null) { return; }

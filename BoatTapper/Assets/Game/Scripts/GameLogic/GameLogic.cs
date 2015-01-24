@@ -2,6 +2,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Extensions;
 
 public class GameLogic : MonoBehaviour 
 {
@@ -42,7 +43,8 @@ public class GameLogic : MonoBehaviour
 
 		// randomize positions
 		hole.transform.position = m_holePositions[UnityEngine.Random.Range(0, m_holePositions.Count)].position;
-		hole.OnDestroy += OnHoleDestroy;
+		hole.OnDestroy += this.OnHoleDestroy;
+		hole.OnTapEvent += this.OnTap;
 
 		return hole;
 	}
@@ -51,5 +53,10 @@ public class GameLogic : MonoBehaviour
 	{
 		m_holes.Remove(p_hole);
 		GameObject.Destroy(p_hole.gameObject);
+	}
+
+	private void OnTap (TapType p_type)
+	{
+		this.Log("GameLog::OnTap", "tap:{0}", p_type);
 	}
 }
