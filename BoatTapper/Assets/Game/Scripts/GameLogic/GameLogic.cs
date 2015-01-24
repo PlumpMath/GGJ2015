@@ -37,6 +37,13 @@ public class GameLogic : MonoBehaviour
 			m_interval = 0;
 			this.CreateHole();
 		}
+
+	}
+
+	private int NumHolesAt (Mass p_mass)
+	{
+		Predicate<Hole> massCondition = new Predicate<Hole>(h => h.MassHole == p_mass);
+		return m_holes.FindAll(massCondition).Count;
 	}
 
 	private Hole CreateHole ()
@@ -53,7 +60,7 @@ public class GameLogic : MonoBehaviour
 		hole.OnTapEvent += this.OnTap;
 
 		// sink the pakking boat
-		m_boat.AdjustMass(hole.MassHole);
+		m_boat.AdjustMass(hole.MassHole, this.NumHolesAt(hole.MassHole));
 
 		return hole;
 	}
@@ -61,6 +68,7 @@ public class GameLogic : MonoBehaviour
 	private void OnHoleDestroy (Hole p_hole)
 	{
 		m_holes.Remove(p_hole);
+		m_boat.AdjustMass(p_hole.MassHole, this.NumHolesAt(p_hole.MassHole));
 		GameObject.Destroy(p_hole.gameObject);
 	}
 

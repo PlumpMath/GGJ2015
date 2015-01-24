@@ -10,19 +10,18 @@ public enum Mass : int
 
 public class Boat : MonoBehaviour 
 {
-	public static readonly float CURRENT_MASS = 2.0f;
-	public static readonly float UNIT_MASS = 0.5f;
-	public static readonly float MASS_RATE = 0.75f;
+	[SerializeField] private float CURRENT_MASS = 2.0f;
+	[SerializeField] private float UNIT_MASS = 0.05f;
+	[SerializeField] private float MASS_RATE = 0.75f;
 
-	[SerializeField]
-	private Rigidbody2D[] m_mass;
+	[SerializeField] private Rigidbody2D[] m_mass;
 	private float[] m_massTarget;
 
 	private void Awake ()
 	{
 		m_massTarget = new float[2];
-		m_massTarget[(int)Mass.Left] = Boat.CURRENT_MASS;
-		m_massTarget[(int)Mass.Right] = Boat.CURRENT_MASS;
+		m_massTarget[(int)Mass.Left] = CURRENT_MASS;
+		m_massTarget[(int)Mass.Right] = CURRENT_MASS;
 	}
 
 	private void LateUpdate ()
@@ -37,8 +36,8 @@ public class Boat : MonoBehaviour
 		m_mass[(int)p_mass].WakeUp();
 	}
 
-	public void AdjustMass (Mass p_mass)
+	public void AdjustMass (Mass p_mass, int p_holes_num)
 	{
-		m_massTarget[(int)p_mass] += UNIT_MASS;
+		m_massTarget[(int)p_mass] = CURRENT_MASS + (UNIT_MASS*p_holes_num);
 	}
 }
