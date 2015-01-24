@@ -46,6 +46,13 @@ public class GameLogic : MonoBehaviour
 
 	[SerializeField] private bool GameHasStarted = false;
 
+	public static GameLogic Instance { get; private set; }
+
+	private void Awake () 
+	{
+		GameLogic.Instance = this;
+	}
+
 	private void Start ()
 	{
 		m_damages = new List<Hazard>();
@@ -68,12 +75,13 @@ public class GameLogic : MonoBehaviour
 
 				m_interval += Time.deltaTime;
 
-				// Replace This
+				/* Replace This
 				if (m_interval > GameLogic.HARD_INTERVAL)
 				{
 					m_interval = 0;
-					this.CreateHazard(m_holeTemplate);
+					this.AddHazardOnShip(m_holeTemplate);
 				}
+				//*/
 			}
 			else
 			{
@@ -133,24 +141,18 @@ public class GameLogic : MonoBehaviour
 	}
 
 
-	private Hazard CreateHazard (Hazard p_hazard)
+	public Hazard AddHazardOnShip (Hazard p_hazard)
 	{
-		Debug.Log("GameLogic::CreateDamage::p_damage: " + p_hazard.name );
-		GameObject go = (GameObject)GameObject.Instantiate(p_hazard.gameObject);
-		Hazard hazard = go.GetComponent<Hazard>();
-		// randomize positions
-		SetHazardAtRandomPosition(hazard);
-
-		m_damages.Add(hazard);
+		m_damages.Add(p_hazard);
 
 		//hazard.transform.position = m_holePositions[UnityEngine.Random.Range(0, m_holePositions.Count)].position;
-		hazard.OnDestroy += this.OnDamageDestroy;
-		hazard.OnTapEvent += this.OnTap;
+		p_hazard.OnDestroy += this.OnDamageDestroy;
+		p_hazard.OnTapEvent += this.OnTap;
 
 		// sink the pakking boat
-		DamageShip(hazard);
+		DamageShip(p_hazard);
 
-		return hazard;
+		return p_hazard;
 	}
 
 	private void DamageShip(Hazard p_damage)

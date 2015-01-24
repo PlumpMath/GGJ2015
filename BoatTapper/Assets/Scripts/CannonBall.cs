@@ -36,6 +36,7 @@ public class CannonBall : MonoBehaviour
 			this.Log("Hit:", "box.TapType:" + box.TapType.ToString() + " == m_TapType: " + m_tapType.ToString());
 			if (box.TapType == m_tapType) 
 			{ 
+				box.CreateHazard(this.transform.position);
 				this.Explode();
 			}
 		}

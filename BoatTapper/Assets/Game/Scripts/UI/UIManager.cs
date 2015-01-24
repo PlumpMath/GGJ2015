@@ -11,7 +11,7 @@ public class UIManager : MonoBehaviour
 	{
 		{ TapType.Hammer, Player.Player1 },
 		{ TapType.Move, Player.Player1 },
-		{ TapType.Pale, Player.Player1 },
+		{ TapType.Pail, Player.Player1 },
 		{ TapType.Stitch, Player.Player1 },
 	};
 
