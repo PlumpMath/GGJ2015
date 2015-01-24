@@ -4,6 +4,13 @@ using System.Collections;
 using System.Collections.Generic;
 using Extensions;
 
+[System.Serializable]
+public class TransformList
+{
+	[SerializeField]
+	public Transform[] list;
+}
+
 public class GameLogic : MonoBehaviour 
 {
 	public static readonly float EASY_INTERVAL = 10.0f;
@@ -11,27 +18,38 @@ public class GameLogic : MonoBehaviour
 	public static readonly float HARD_INTERVAL = 4.0f;
 	public static readonly Vector2 UNIT_SEA_LEVEL = new Vector2(0.0f, 0.05f);
 	public static readonly int NUMBER_OF_HOLES = 3;
-	public static readonly int HOLE_LIMIT = 10;
+
 
 	// template
 	[SerializeField]
-	private Hole m_holeTemplate;
+	private Hazard m_holeTemplate;
 	[SerializeField]
 	private Boat m_boat;
 	[SerializeField]
 	private Transform m_seaLevel;
 
 	[SerializeField]
+	public TransformList[] m_hazardPositions = new TransformList[5];
+
+	[SerializeField]
 	private List<Transform> m_holePositions;
-	private List<Hole> m_holes;
+	private List<Hazard> m_damages;
 	private float m_interval;
 	private Vector2 m_defaultSeaLevel;
 	[SerializeField] private Vector2 m_targetSeaLevel;
+	[SerializeField] private int[] m_hazardLimit = {20, 20, 20, 20, 20};
+
+	[SerializeField]
+	private float m_levelDuration = 180f;
+	private float m_levelElapsedTime = 0f;
+	private float m_levelProgression = 1.0f;
+
+	[SerializeField] private bool GameHasStarted = false;
 
 	private void Start ()
 	{
-		m_holes = new List<Hole>();
-		this.Assert<Hole>(m_holeTemplate, "ERROR: m_holeTemplate must be initialized!");
+		m_damages = new List<Hazard>();
+		this.Assert<Hazard>(m_holeTemplate, "ERROR: m_holeTemplate must be initialized!");
 		this.Assert<Boat>(m_boat, "ERROR: m_boat must be initialized!");
 		this.Assert<Transform>(m_seaLevel, "ERROR: m_seaLevel must be initialized!");
 
@@ -42,64 +60,155 @@ public class GameLogic : MonoBehaviour
 
 	private void Update ()
 	{
-		m_interval += Time.deltaTime;
-
-		if (m_interval > GameLogic.HARD_INTERVAL)
+		if(GameHasStarted)
 		{
-			m_interval = 0;
-			this.CreateHole();
+			if(m_levelElapsedTime <= m_levelDuration)
+			{
+				m_levelElapsedTime += Time.deltaTime * m_levelProgression;
+
+				m_interval += Time.deltaTime;
+
+				// Replace This
+				if (m_interval > GameLogic.HARD_INTERVAL)
+				{
+					m_interval = 0;
+					this.CreateHazard(m_holeTemplate);
+				}
+			}
+			else
+			{
+				// 
+				OnGameHasEnded();
+				GameHasStarted = false;
+			}
 		}
 	}
 
 	private void FixedUpdate ()
 	{
-		//Vector2 seaLevelPos = Vector2.Lerp(m_seaLevel.position, m_targetSeaLevel, Time.deltaTime);
-		//m_seaLevel.Translate( new Vector3(seaLevelPos.x, seaLevelPos.y, 0));
 		m_seaLevel.transform.position  = (Vector2.MoveTowards(new Vector2(m_seaLevel.position.x, m_seaLevel.position.y), m_targetSeaLevel, 0.1f * Time.deltaTime));
-
-		//m_seaLevel.rigidbody2D.velocity = ( m_targetSeaLevel - new Vector2(m_seaLevel.position.x, m_seaLevel.position.y )) * Time.deltaTime;
 	}
 
-	private int NumHolesAt (Mass p_mass)
+	private Transform[] GetHazardPositions(TapType p_type)
 	{
-		Predicate<Hole> massCondition = new Predicate<Hole>(h => h.MassHole == p_mass);
-		return m_holes.FindAll(massCondition).Count;
+		return m_hazardPositions[(int) p_type].list;
 	}
 
-	private void AdjustSeaLevel (int p_holes)
-	{
-		//if(0 <= p_holes && p_holes < HOLE_LIMIT)
-		{
-			m_targetSeaLevel = m_defaultSeaLevel - (UNIT_SEA_LEVEL * p_holes);
-			m_targetSeaLevel.x = 0f;
-		}
+	private void SetHazardAtRandomPosition(Hazard p_damage)
+	{	
+		Debug.Log("GameLogic::SetHazardAtRandomPosition::p_damage: " + p_damage.name );
+		p_damage.transform.parent = m_boat.gameObject.transform;
+
+		Transform[] hazardPositions = GetHazardPositions(p_damage.TapType);
+		if(hazardPositions.Length > 0)
+			p_damage.transform.position = hazardPositions[UnityEngine.Random.Range(0, hazardPositions.Length)].position;
+		
+		p_damage.transform.rotation = Quaternion.identity;
+
+		Debug.Log("GameLogic::SetHazardAtRandomPosition::p_damage.transform.position: " + p_damage.transform.position );
 	}
 
-	private Hole CreateHole ()
+	private List<Hazard> GetDamageAtSide (List<Hazard> p_holes, Side p_side)
 	{
-		GameObject go = (GameObject)GameObject.Instantiate(m_holeTemplate.gameObject);
-		Hole hole = go.GetComponent<Hole>();
-		m_holes.Add(hole);
+		Predicate<Hazard> massCondition = new Predicate<Hazard>(h => h.SideLocation == p_side);
+		return p_holes.FindAll(massCondition);
+	}
 
+	private List<Hazard> GetDamageOfTapType (List<Hazard> p_holes, TapType p_type)
+	{
+		Predicate<Hazard> massCondition = new Predicate<Hazard>(h => h.TapType == p_type);
+		return p_holes.FindAll(massCondition);
+	}
+
+	private List<Hazard> GetDamageOfHoldType (List<Hazard> p_holes, TapType p_type)
+	{
+		Predicate<Hazard> massCondition = new Predicate<Hazard>(h => h.HoldType == p_type);
+		return p_holes.FindAll(massCondition);
+	}
+
+	private List<Hazard> GetActiveHazards (List<Hazard> p_holes, bool p_state)
+	{
+		Predicate<Hazard> massCondition = new Predicate<Hazard>(h => h.ActiveHazard == p_state);
+		return p_holes.FindAll(massCondition);
+	}
+
+
+	private Hazard CreateHazard (Hazard p_hazard)
+	{
+		Debug.Log("GameLogic::CreateDamage::p_damage: " + p_hazard.name );
+		GameObject go = (GameObject)GameObject.Instantiate(p_hazard.gameObject);
+		Hazard hazard = go.GetComponent<Hazard>();
 		// randomize positions
-		hole.transform.parent = m_boat.gameObject.transform;
-		hole.transform.position = m_holePositions[UnityEngine.Random.Range(0, m_holePositions.Count)].position;
-		hole.transform.rotation = Quaternion.identity;
-		hole.OnDestroy += this.OnHoleDestroy;
-		hole.OnTapEvent += this.OnTap;
+		SetHazardAtRandomPosition(hazard);
+
+		m_damages.Add(hazard);
+
+		//hazard.transform.position = m_holePositions[UnityEngine.Random.Range(0, m_holePositions.Count)].position;
+		hazard.OnDestroy += this.OnDamageDestroy;
+		hazard.OnTapEvent += this.OnTap;
 
 		// sink the pakking boat
-		m_boat.AdjustMass(hole.MassHole, this.NumHolesAt(hole.MassHole));
-		this.AdjustSeaLevel(m_holes.Count);
-		return hole;
+		DamageShip(hazard);
+
+		return hazard;
 	}
 
-	private void OnHoleDestroy (Hole p_hole)
+	private void DamageShip(Hazard p_damage)
 	{
-		m_holes.Remove(p_hole);
-		m_boat.AdjustMass(p_hole.MassHole, this.NumHolesAt(p_hole.MassHole));
-		this.AdjustSeaLevel(m_holes.Count);
-		GameObject.Destroy(p_hole.gameObject);
+		List<Hazard> hazards = this.GetDamageOfTapType(m_damages, p_damage.TapType);
+		List<Hazard> activeHazards = this.GetActiveHazards(hazards, true);
+
+		switch(p_damage.TapType)
+		{
+		case TapType.Hammer:
+			List<Hazard> holesAtSide = this.GetDamageAtSide(activeHazards, p_damage.SideLocation);
+			m_boat.AdjustMass(p_damage.SideLocation, holesAtSide.Count);
+			this.AdjustSeaLevel(activeHazards.Count);
+			break;
+		case TapType.Stitch:
+			AdjustShipSpeed(activeHazards.Count);
+			break;
+		}
+
+	}
+
+	private void AdjustShipSpeed(int p_sailHoles)
+	{
+		int holeLimit = m_hazardLimit[(int) TapType.Stitch];
+		m_levelProgression = Mathf.Max(holeLimit - p_sailHoles, 1) / Mathf.Max(holeLimit, 2);
+	}
+
+	private void AdjustSeaLevel (int p_hullHoles)
+	{
+		if(p_hullHoles < m_hazardLimit[(int) TapType.Hammer])
+		{
+			m_targetSeaLevel = m_defaultSeaLevel - (UNIT_SEA_LEVEL * p_hullHoles);
+			m_targetSeaLevel.x = 0f;
+		}
+		else
+		{
+			ForcedSinkShip();
+		}
+
+	}
+
+	private void ForcedSinkShip()
+	{
+		//m_boat.AdjustMass(Side.Left, 100); // Use Constants instead
+		AdjustSeaLevel(100);
+	}
+
+	private void OnDamageDestroy (Hazard p_damage)
+	{
+		m_damages.Remove(p_damage);
+		DamageShip(p_damage);
+		GameObject.Destroy(p_damage.gameObject);
+	}
+
+	private void OnGameHasEnded ()
+	{
+		// Stuff Here
+		Debug.Log("YOU WIN!");
 	}
 
 	private void OnTap (TapType p_type)

@@ -2,7 +2,7 @@
 using System;
 using System.Collections;
 
-public enum Mass : int
+public enum Side : int
 {
 	Left	= 0,
 	Right	= 1,
@@ -20,25 +20,25 @@ public class Boat : MonoBehaviour
 	private void Awake ()
 	{
 		m_massTarget = new float[2];
-		m_massTarget[(int)Mass.Left] = CURRENT_MASS;
-		m_massTarget[(int)Mass.Right] = CURRENT_MASS;
+		m_massTarget[(int)Side.Left] = CURRENT_MASS;
+		m_massTarget[(int)Side.Right] = CURRENT_MASS;
 	}
 
 	private void LateUpdate ()
 	{
-		this.UpdateMass(Mass.Left);
-		this.UpdateMass(Mass.Right);
+		this.UpdateMass(Side.Left);
+		this.UpdateMass(Side.Right);
 		transform.position = Vector3.Lerp( transform.position, new Vector3(0, transform.position.y, transform.position.z), Time.deltaTime);
 	}
 
-	private void UpdateMass (Mass p_mass)
+	private void UpdateMass (Side p_side)
 	{
-		m_mass[(int)p_mass].mass = Mathf.Lerp(m_mass[(int)p_mass].mass, m_massTarget[(int)p_mass], Time.deltaTime * MASS_RATE);
-		m_mass[(int)p_mass].WakeUp();
+		m_mass[(int)p_side].mass = Mathf.Lerp(m_mass[(int)p_side].mass, m_massTarget[(int)p_side], Time.deltaTime * MASS_RATE);
+		m_mass[(int)p_side].WakeUp();
 	}
 
-	public void AdjustMass (Mass p_mass, int p_holes_num)
+	public void AdjustMass (Side p_side, int p_damage_num)
 	{
-		m_massTarget[(int)p_mass] = CURRENT_MASS + (UNIT_MASS*p_holes_num);
+		m_massTarget[(int)p_side] = CURRENT_MASS + (UNIT_MASS*p_damage_num);
 	}
 }
