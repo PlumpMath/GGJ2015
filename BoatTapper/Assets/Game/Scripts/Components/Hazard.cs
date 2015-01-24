@@ -79,6 +79,8 @@ public class Hazard : MonoBehaviour
 	[Signal]
 	private void OnTriggerTap (TapTrigger p_tap)
 	{
+		this.Log("Hazard::OnTriggerTap", "MyTap:{0} Tap:{1}", m_tapType, p_tap.TapType);
+
 		if(p_tap.TapType == m_tapType)
 		{
 			if (m_numberOfTaps <= 0) 

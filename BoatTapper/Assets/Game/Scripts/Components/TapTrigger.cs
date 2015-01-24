@@ -1,5 +1,8 @@
 ﻿using UnityEngine;
+using System;
 using System.Collections;
+using System.Collections.Generic;
+using Extensions;
 
 public class TapTrigger : MonoBehaviour
 {
@@ -9,7 +12,8 @@ public class TapTrigger : MonoBehaviour
 	
 	private void OnClicked ()
 	{
-		OnTriggerAction.Invoke(this);
+		this.Log("TapTrigger::OnClicked", "TK2D Trigger Type:{0}", m_type);
+		this.OnTriggerAction.Invoke(this);
 	}
 	
 	public TapType TapType 
