@@ -198,7 +198,7 @@ public class GameLogic : MonoBehaviour
 	private void ForcedSinkShip()
 	{
 		//m_boat.AdjustMass(Side.Left, 100); // Use Constants instead
-		AdjustSeaLevel(100);
+		m_targetSeaLevel = m_defaultSeaLevel - (UNIT_SEA_LEVEL * 100);
 	}
 
 	private void OnDamageDestroy (Hazard p_damage)

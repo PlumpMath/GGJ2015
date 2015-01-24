@@ -17,7 +17,7 @@ public class BallSpawner : MonoBehaviour
 	public static readonly float MAX_SPAWN_INTERVAL = 20f;
 
 	// spawner position
-	public static readonly Vector2 SPAWN_POSITION = new Vector2(1.137217f, -0.6044912f);
+	public static readonly Vector2 SPAWN_POSITION = new Vector2(2.0f, 0.0f);
 
 	// spawns for 1.137217, -0.6044912
 	public static readonly Vector2[] SPAWNS = new Vector2[5]

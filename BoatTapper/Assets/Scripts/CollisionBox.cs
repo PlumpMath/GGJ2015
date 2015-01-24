@@ -7,6 +7,7 @@ using Extensions;
 public class CollisionBox : MonoBehaviour
 {
 	[SerializeField] private Hazard m_hazardTemplate;
+	private Hazard hazard;
 
 	public TapType TapType { 
 		get { 
@@ -16,13 +17,23 @@ public class CollisionBox : MonoBehaviour
 		} 
 	}
 
+	public bool CanSpawn {
+		get {
+			return hazard != null && hazard.gameObject.activeSelf;
+		}
+	}
+
 	public void CreateHazard(Vector3 p_position)
 	{
-		Debug.Log("CollisionBox::CreateDamage::p_damage: " + m_hazardTemplate.name );
-		GameObject go = (GameObject)GameObject.Instantiate(m_hazardTemplate.gameObject, p_position, Quaternion.identity);
-		Hazard hazard = go.GetComponent<Hazard>();
-
-		this.Log("CollisionBox::CreatHazard", "ScaleX:{0} Y:{1}", go.transform.localScale.x, go.transform.localScale.y);
+		if(!hazard || hazard == null)
+		{
+			Debug.Log("CollisionBox::CreateDamage::p_damage: " + m_hazardTemplate.name );
+			Vector3 newPosition = p_position;
+			newPosition.z = transform.position.z;
+			GameObject go = (GameObject)GameObject.Instantiate(m_hazardTemplate.gameObject, newPosition, Quaternion.identity);
+			hazard = go.GetComponent<Hazard>();
+			this.Log("CollisionBox::CreatHazard", "ScaleX:{0} Y:{1}", go.transform.localScale.x, go.transform.localScale.y);
+		}
 
 		// randomize positions
 		if (GameLogic.Instance != null && hazard.TapType == this.TapType)

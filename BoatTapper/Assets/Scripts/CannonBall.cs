@@ -51,6 +51,7 @@ public class CannonBall : MonoBehaviour
 	public void Throw (Vector2 p_throwForce)
 	{
 		this.rigidbody2D.AddForce(p_throwForce);
+		this.rigidbody2D.AddTorque(-p_throwForce.x);
 	}
 
 	public void Explode ()
