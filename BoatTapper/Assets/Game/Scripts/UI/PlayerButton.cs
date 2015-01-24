@@ -10,7 +10,7 @@ public enum Player
 public class PlayerButton : MonoBehaviour 
 {
 	[SerializeField]
-	private Player m_player;
+	private Side m_player;
 	[SerializeField]
 	private TapType m_type;
 	[SerializeField]
@@ -29,7 +29,7 @@ public class PlayerButton : MonoBehaviour
 		this.OnTriggerAction.Invoke(this);
 	}
 
-	public Player Player 
+	public Side Player 
 	{
 		get { return m_player; }
 		private set { m_player = value; }

@@ -19,7 +19,6 @@ public class GameLogic : MonoBehaviour
 	public static readonly Vector2 UNIT_SEA_LEVEL = new Vector2(0.0f, 0.05f);
 	public static readonly int NUMBER_OF_HOLES = 3;
 
-
 	// template
 	[SerializeField]
 	private Hazard m_holeTemplate;
@@ -28,13 +27,7 @@ public class GameLogic : MonoBehaviour
 	[SerializeField]
 	private Transform m_seaLevel;
 
-	[SerializeField]
-	public TransformList[] m_hazardPositions = new TransformList[5];
-
-	[SerializeField]
-	private List<Transform> m_holePositions;
-	private List<Hazard> m_damages;
-	private float m_interval;
+	private List<Hazard> m_hazards;
 	private Vector2 m_defaultSeaLevel;
 	[SerializeField] private Vector2 m_targetSeaLevel;
 	[SerializeField] private int[] m_hazardLimit = {20, 20, 20, 20, 20};
@@ -44,18 +37,19 @@ public class GameLogic : MonoBehaviour
 	private float m_levelElapsedTime = 0f;
 	private float m_levelProgression = 1.0f;
 
-	[SerializeField] private bool GameHasStarted = false;
+	[SerializeField] public bool GameHasStarted { get; set; }
 
 	public static GameLogic Instance { get; private set; }
 
 	private void Awake () 
 	{
-		GameLogic.Instance = this;
+		if(GameLogic.Instance == null)
+			GameLogic.Instance = this;
 	}
 
 	private void Start ()
 	{
-		m_damages = new List<Hazard>();
+		m_hazards = new List<Hazard>();
 		this.Assert<Hazard>(m_holeTemplate, "ERROR: m_holeTemplate must be initialized!");
 		this.Assert<Boat>(m_boat, "ERROR: m_boat must be initialized!");
 		this.Assert<Transform>(m_seaLevel, "ERROR: m_seaLevel must be initialized!");
@@ -67,15 +61,17 @@ public class GameLogic : MonoBehaviour
 
 	private void Update ()
 	{
+
 		if(GameHasStarted)
 		{
 			if(m_levelElapsedTime <= m_levelDuration)
 			{
 				m_levelElapsedTime += Time.deltaTime * m_levelProgression;
 
+				/* Replace This
 				m_interval += Time.deltaTime;
 
-				/* Replace This
+
 				if (m_interval > GameLogic.HARD_INTERVAL)
 				{
 					m_interval = 0;
@@ -96,7 +92,7 @@ public class GameLogic : MonoBehaviour
 	{
 		m_seaLevel.transform.position  = (Vector2.MoveTowards(new Vector2(m_seaLevel.position.x, m_seaLevel.position.y), m_targetSeaLevel, 0.1f * Time.deltaTime));
 	}
-
+	/*
 	private Transform[] GetHazardPositions(TapType p_type)
 	{
 		return m_hazardPositions[(int) p_type].list;
@@ -115,6 +111,7 @@ public class GameLogic : MonoBehaviour
 
 		Debug.Log("GameLogic::SetHazardAtRandomPosition::p_damage.transform.position: " + p_damage.transform.position );
 	}
+	//*/
 
 	private List<Hazard> GetDamageAtSide (List<Hazard> p_holes, Side p_side)
 	{
@@ -140,11 +137,15 @@ public class GameLogic : MonoBehaviour
 		return p_holes.FindAll(massCondition);
 	}
 
+	public void UpdatePaused(bool p_paused)
+	{
+		Time.timeScale = p_paused ? 0.0f : 1.0f; // YES. I KNOW THIS IS SHITTY CODE.
+	}
 
 	public Hazard AddHazardOnShip (Hazard p_hazard)
 	{
 		p_hazard.transform.parent = m_boat.transform;
-		m_damages.Add(p_hazard);
+		m_hazards.Add(p_hazard);
 
 		//hazard.transform.position = m_holePositions[UnityEngine.Random.Range(0, m_holePositions.Count)].position;
 		p_hazard.OnDestroy += this.OnDamageDestroy;
@@ -158,19 +159,29 @@ public class GameLogic : MonoBehaviour
 
 	private void DamageShip(Hazard p_damage)
 	{
-		List<Hazard> hazards = this.GetDamageOfTapType(m_damages, p_damage.TapType);
-		List<Hazard> activeHazards = this.GetActiveHazards(hazards, true);
+		List<Hazard> activeHazards = this.GetActiveHazards(m_hazards, true);
+		List<Hazard> hazards = this.GetDamageOfTapType(activeHazards, p_damage.TapType);
+		List<Hazard> fireHazards = this.GetDamageOfTapType(activeHazards, TapType.Pail);
+
+		hazards.AddRange(fireHazards);
 
 		switch(p_damage.TapType)
 		{
 		case TapType.Hammer:
-			List<Hazard> holesAtSide = this.GetDamageAtSide(activeHazards, p_damage.LocalSideLocation);
+			List<Hazard> holesAtSide = this.GetDamageAtSide(hazards, p_damage.LocalSideLocation);
 			m_boat.AdjustMass(p_damage.LocalSideLocation, holesAtSide.Count);
-			this.AdjustSeaLevel(activeHazards.Count);
+			this.AdjustSeaLevel(hazards.Count);
 			break;
 		case TapType.Stitch:
-			AdjustShipSpeed(activeHazards.Count);
+			this.AdjustShipSpeed(hazards.Count);
 			break;
+		case TapType.Pail:
+			List<Hazard> damageAtSide = this.GetDamageAtSide(hazards, p_damage.LocalSideLocation);
+			m_boat.AdjustMass(p_damage.LocalSideLocation, damageAtSide.Count);
+			this.AdjustSeaLevel(hazards.Count);
+			this.AdjustShipSpeed(hazards.Count);
+			break;
+
 		}
 
 	}
@@ -203,7 +214,7 @@ public class GameLogic : MonoBehaviour
 
 	private void OnDamageDestroy (Hazard p_damage)
 	{
-		m_damages.Remove(p_damage);
+		m_hazards.Remove(p_damage);
 		DamageShip(p_damage);
 		GameObject.Destroy(p_damage.gameObject);
 	}

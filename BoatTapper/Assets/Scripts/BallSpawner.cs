@@ -45,6 +45,7 @@ public class BallSpawner : MonoBehaviour
 	private float m_targetInterval = EASY_SPAWN;
 	private List<CannonBall> m_balls;
 	private float m_interval;
+	private TapType[] HazardTypes = {TapType.Hammer, TapType.Stitch, TapType.Pail};
 
 	private void Start ()
 	{
