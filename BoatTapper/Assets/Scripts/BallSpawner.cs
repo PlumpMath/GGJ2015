@@ -6,14 +6,16 @@ using Extensions;
 
 public class BallSpawner : MonoBehaviour 
 {
-	public readonly float EASY_SPAWN = 10f;
-	public readonly float MEDIUM_SPAWN = 6f;
-	public readonly float HARD_SPAWN = 4f;
+	public static readonly float EASY_SPAWN = 10f;
+	public static readonly float MEDIUM_SPAWN = 6f;
+	public static readonly float HARD_SPAWN = 4f;
 
 	[SerializeField]
 	private CannonBall m_ballTemplate;
 	[SerializeField]
 	private Vector2 m_throwForce;
+	[SerializeField]
+	private float m_targetInterval = HARD_SPAWN;
 	private List<CannonBall> m_balls;
 	private float m_interval;
 
@@ -25,12 +27,12 @@ public class BallSpawner : MonoBehaviour
 		m_balls = new List<CannonBall>();
 		m_throwForce = new Vector2(-1024f, 768f) * 0.15f;
 	}
-
+	
 	private void Update ()
 	{
 		m_interval += Time.deltaTime;
 
-		if (m_interval >= HARD_SPAWN) 
+		if (m_interval >= m_targetInterval) 
 		{
 			m_interval = 0f;
 			this.Throw(3);
@@ -45,6 +47,9 @@ public class BallSpawner : MonoBehaviour
 		ball.Throw(m_throwForce);
 		ball.transform.parent = this.transform;
 		ball.transform.position = this.transform.position;
+
+		// setup type here
+		ball.TapType = TapType.Hammer;
 
 		m_balls.Add(ball);
 	}
