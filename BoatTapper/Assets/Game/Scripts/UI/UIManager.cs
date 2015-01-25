@@ -177,6 +177,12 @@ public class UIManager : MonoBehaviour
 
 	}
 
+	public IEnumerator PrepareForBattle()
+	{
+
+		yield return null;
+	}
+
 	[Signal]
 	private void OnPressedButton (PlayerButton p_button)
 	{

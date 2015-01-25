@@ -52,6 +52,11 @@ public class GameLogic : MonoBehaviour
 
 	public static GameLogic Instance { get; private set; }
 
+	[SerializeField]
+	private List<GameObject> m_prepareForBattleTemplate = new List<GameObject>();
+
+	private Queue<GameObject> PrepareForBattle = new Queue<GameObject>();
+
 	private void Awake () 
 	{
 		if(GameLogic.Instance == null)
@@ -71,7 +76,9 @@ public class GameLogic : MonoBehaviour
 		
 		UpdateSkyPosition(m_levelElapsedTime/Mathf.Max(0.1f, m_levelDuration));
 
-		StartCoroutine(StartGame());
+		ResetGame();
+
+		StartCoroutine( StartGame());
 	}
 
 	private void Update ()
@@ -162,6 +169,14 @@ public class GameLogic : MonoBehaviour
 			hazard.OnDestroy(hazard);
 		}
 		m_hazards.Clear();
+
+		PrepareForBattle.Clear();
+
+		for(int i = 0; i < m_prepareForBattleTemplate.Count; i++)
+		{
+			m_prepareForBattleTemplate[i].gameObject.SetActive(false);
+			PrepareForBattle.Enqueue(m_prepareForBattleTemplate[i]);
+		}
 	}
 
 	public IEnumerator StartGame() 
@@ -172,11 +187,50 @@ public class GameLogic : MonoBehaviour
 		if(OnStartGame != null)
 			OnStartGame();
 
-		yield return null;
-		//yield return StartCoroutine(UIManager.Instance.PrepareForBattle());
+		yield return new WaitForSeconds(2.5f);
 
+		PrepareForBattleAnimation();
+	}
+
+	public void PrepareForBattleAnimation()
+	{
+		for(int i = 0; i < m_prepareForBattleTemplate.Count; i++)
+		{
+			m_prepareForBattleTemplate[i].gameObject.SetActive(false);
+		}
+
+		if(PrepareForBattle.Count <= 0)
+		{
+			StartCoroutine(StartEnemyFire());
+		}
+		else
+		{
+			GameObject target = PrepareForBattle.Dequeue();
+
+			target.SetActive(true);
+			Hashtable hash = new Hashtable();
+			hash["scale"] = Vector3.zero;
+			hash["easetype"] = iTween.EaseType.easeInOutBounce;
+			hash["time"] = 1.0f;
+			
+			hash["oncompletetarget"] = this.gameObject;
+			hash["oncomplete"] = "PrepareForBattleAnimation";
+
+
+			// Animation Code Here
+			iTween.ScaleFrom(target, hash);
+			// Animation Ends Here
+		}
+
+		
+	}
+
+	public IEnumerator StartEnemyFire()
+	{
+		yield return new WaitForSeconds(1.5f);
 		GameHasStarted = true;
 	}
+
 
 	public void UpdatePaused(bool p_paused)
 	{
