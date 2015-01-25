@@ -4,15 +4,17 @@ using Extensions;
 
 public class FGBoat : MonoBehaviour 
 {
-	public readonly float MIN_DELAY	= 5f;
-	public readonly float MAX_DELAY = 10f;
-	public readonly float MIN_TRAVEL_TIME = 60f;
-	public readonly float MAX_TRAVEL_TIME = 100f;
+	public float minDelay	= 5f;
+	public float maxDelay = 10f;
+	public float minTravelTime = 60f;
+	public float maxTravelTime = 100f;
 
 	[SerializeField] private Vector3 m_startingPoint;
 	[SerializeField] private Vector3 m_endingPoint;
 	[SerializeField] private float m_duration;
 	[SerializeField] private float m_delay;
+
+	public bool lockYPosition = false;
 
 	private void Start () 
 	{
@@ -21,21 +23,33 @@ public class FGBoat : MonoBehaviour
 
 	private void StartMoving ()
 	{
-		m_delay = UnityEngine.Random.Range(MIN_DELAY, MAX_DELAY);
-		m_duration = UnityEngine.Random.Range(MIN_TRAVEL_TIME, MAX_TRAVEL_TIME);
+		m_delay = UnityEngine.Random.Range(minDelay, maxDelay);
+		m_duration = UnityEngine.Random.Range(minTravelTime, maxTravelTime);
 
+		Vector3 startTargetPos = m_startingPoint;
+		Vector3 targetPos = m_endingPoint;
+
+		if(lockYPosition)
+		{
+			startTargetPos.y = transform.position.y;
+			targetPos.y = transform.position.y;
+		}
+		
+		transform.position = startTargetPos;
 		Hashtable hash = new Hashtable();
-		hash["position"] = m_endingPoint;
+		hash["position"] = targetPos;
 		hash["time"] = m_duration;
 		hash["delay"] = m_delay;
 		hash["oncompletetarget"] = this.gameObject;
 		hash["oncomplete"] = "OnMoveComplete";
+		hash["easetype"] = iTween.EaseType.linear;
 
 		iTween.MoveTo(this.gameObject, hash);
 	}
 
 	private void OnMoveComplete ()
 	{
+		Debug.Log("OnMoveComplete");
 		this.StartMoving();
 	}
 }

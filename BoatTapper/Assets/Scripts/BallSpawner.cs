@@ -10,11 +10,11 @@ public class BallSpawner : MonoBehaviour
 	public static readonly float MEDIUM_SPAWN	= 15f;
 	public static readonly float HARD_SPAWN 	= 10f;
 
-	public static readonly int MIN_THROWN = 1;
-	public static readonly int MAX_THROWN = 3;
+	public int m_minThrown = 1;
+	public int m_maxThrown = 3;
 
-	public static readonly float MIN_SPAWN_INTERVAL = 10f;
-	public static readonly float MAX_SPAWN_INTERVAL = 20f;
+	public float m_minSpawnInterval = 10f;
+	public float m_maxSpawnInterval = 20f;
 
 	// spawner position
 	public static readonly Vector2 SPAWN_POSITION = new Vector2(2.0f, 0.0f);
@@ -69,14 +69,15 @@ public class BallSpawner : MonoBehaviour
 			this.RandomizeSpawns();
 
 			m_interval = 0f;
-			int num = UnityEngine.Random.Range(MIN_THROWN, MAX_THROWN);
+			int num = UnityEngine.Random.Range(m_minThrown, m_maxThrown);
 			this.StartCoroutine(this.Throw(num));
 		}
+
 	}
 
 	public IEnumerator Throw (int p_num)
 	{
-		float subInterval = UnityEngine.Random.Range(MIN_SPAWN_INTERVAL, MAX_SPAWN_INTERVAL);
+		float subInterval = UnityEngine.Random.Range(m_minSpawnInterval, m_maxSpawnInterval);
 		//float subInterval = this.Random<float>(MIN_SPAWN_INTERVAL, MAX_SPAWN_INTERVAL);
 
 		for (int i = 0; i < p_num; i++)
@@ -89,17 +90,20 @@ public class BallSpawner : MonoBehaviour
 
 	private void Spawn ()
 	{
-		GameObject obj = (GameObject)GameObject.Instantiate(m_ballTemplate.gameObject);
-		CannonBall ball = obj.GetComponent<CannonBall>();
-		ball.OnDestroyBall += this.OnDestroyBall;
-		ball.Throw(m_throwForce);
-		ball.transform.parent = this.transform;
-		ball.transform.position = this.transform.position;
-		
-		// setup type here
-		ball.TapType = TapType.Hammer;
-		
-		m_balls.Add(ball);
+		if(GameLogic.Instance.GameHasStarted && GameLogic.Instance.InGame)
+		{
+			GameObject obj = (GameObject)GameObject.Instantiate(m_ballTemplate.gameObject);
+			CannonBall ball = obj.GetComponent<CannonBall>();
+			ball.OnDestroyBall += this.OnDestroyBall;
+			ball.Throw(m_throwForce);
+			ball.transform.parent = this.transform;
+			ball.transform.position = this.transform.position;
+			
+			// setup type here
+			ball.TapType = TapType.Hammer;
+			
+			m_balls.Add(ball);
+		}
 	}
 
 	private void RandomizeSpawns ()

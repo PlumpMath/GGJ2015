@@ -13,11 +13,13 @@ public class TransformList
 
 public class GameLogic : MonoBehaviour 
 {
+	/*
 	public static readonly float EASY_INTERVAL = 10.0f;
 	public static readonly float MEDIUM_INTERVAL = 7.0f;
 	public static readonly float HARD_INTERVAL = 4.0f;
+//*/
 	public static readonly Vector2 UNIT_SEA_LEVEL = new Vector2(0.0f, 0.01f);
-	public static readonly int NUMBER_OF_HOLES = 3;
+	//public static readonly int NUMBER_OF_HOLES = 3;
 
 	// template
 	[SerializeField]
@@ -30,14 +32,20 @@ public class GameLogic : MonoBehaviour
 	private List<Hazard> m_hazards;
 	private Vector2 m_defaultSeaLevel;
 	[SerializeField] private Vector2 m_targetSeaLevel;
-	[SerializeField] private int[] m_hazardLimit = {20, 20, 20, 20, 20};
+	[SerializeField] private int[] m_hazardLimit = {10, 10, 10, 10, 10};
 
 	[SerializeField]
 	private float m_levelDuration = 180f;
 	private float m_levelElapsedTime = 0f;
 	private float m_levelProgression = 1.0f;
 
-	[SerializeField] public bool GameHasStarted { get; set; }
+	[SerializeField] private GameObject m_sky;
+	[SerializeField] private Vector3 m_startSkyPosition, m_endSkyPosition;
+
+	[SerializeField] public bool GameHasStarted;
+	public bool InGame { 
+		get { return m_levelElapsedTime <= m_levelDuration; } 
+	}
 
 	public static GameLogic Instance { get; private set; }
 
@@ -57,6 +65,8 @@ public class GameLogic : MonoBehaviour
 		// set default values
 		m_defaultSeaLevel = m_seaLevel.transform.position;
 		m_targetSeaLevel = m_seaLevel.transform.position;
+		
+		UpdateSkyPosition(m_levelElapsedTime/Mathf.Max(0.1f, m_levelDuration));
 	}
 
 	private void Update ()
@@ -64,8 +74,10 @@ public class GameLogic : MonoBehaviour
 
 		if(GameHasStarted)
 		{
-			if(m_levelElapsedTime <= m_levelDuration)
+			if(InGame)
 			{
+				UpdateSkyPosition(m_levelElapsedTime/Mathf.Max(0.1f, m_levelDuration));
+
 				m_levelElapsedTime += Time.deltaTime * m_levelProgression;
 
 				/* Replace This
@@ -83,7 +95,6 @@ public class GameLogic : MonoBehaviour
 			{
 				// 
 				OnGameHasEnded();
-				GameHasStarted = false;
 			}
 		}
 	}
@@ -142,6 +153,11 @@ public class GameLogic : MonoBehaviour
 		Time.timeScale = p_paused ? 0.0f : 1.0f; // YES. I KNOW THIS IS SHITTY CODE.
 	}
 
+	private void UpdateSkyPosition(float p_levelCompletion)
+	{
+		m_sky.transform.localPosition = Vector3.Lerp(m_startSkyPosition, m_endSkyPosition, p_levelCompletion);
+	}
+
 	public Hazard AddHazardOnShip (Hazard p_hazard)
 	{
 		p_hazard.transform.parent = m_boat.transform;
@@ -194,6 +210,7 @@ public class GameLogic : MonoBehaviour
 
 	private void AdjustSeaLevel (int p_hullHoles)
 	{
+		Debug.Log("p_hullHoles: " + p_hullHoles + " < " + m_hazardLimit[(int) TapType.Hammer]);
 		if(p_hullHoles < m_hazardLimit[(int) TapType.Hammer])
 		{
 			m_targetSeaLevel = m_defaultSeaLevel - (UNIT_SEA_LEVEL * p_hullHoles);
@@ -208,8 +225,11 @@ public class GameLogic : MonoBehaviour
 
 	private void ForcedSinkShip()
 	{
+		Debug.Log("Loser.");
 		//m_boat.AdjustMass(Side.Left, 100); // Use Constants instead
-		m_targetSeaLevel = m_defaultSeaLevel - (UNIT_SEA_LEVEL * 100);
+		m_targetSeaLevel = m_defaultSeaLevel - (UNIT_SEA_LEVEL * 10000);
+		
+		OnGameHasEnded();
 	}
 
 	private void OnDamageDestroy (Hazard p_damage)
@@ -222,7 +242,19 @@ public class GameLogic : MonoBehaviour
 	private void OnGameHasEnded ()
 	{
 		// Stuff Here
-		Debug.Log("YOU WIN!");
+		if(m_levelElapsedTime >= m_levelDuration)
+		{
+			Debug.Log("YOU WIN!");
+			AdjustSeaLevel(0);
+		}
+		else
+		{
+			Debug.Log("FAKKIN LOSER!");
+		}
+
+		
+
+		GameHasStarted = false;
 	}
 
 	private void OnTap (TapType p_type)
