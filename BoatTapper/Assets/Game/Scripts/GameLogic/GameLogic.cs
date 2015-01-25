@@ -16,7 +16,7 @@ public class GameLogic : MonoBehaviour
 	public static readonly float EASY_INTERVAL = 10.0f;
 	public static readonly float MEDIUM_INTERVAL = 7.0f;
 	public static readonly float HARD_INTERVAL = 4.0f;
-	public static readonly Vector2 UNIT_SEA_LEVEL = new Vector2(0.0f, 0.05f);
+	public static readonly Vector2 UNIT_SEA_LEVEL = new Vector2(0.0f, 0.01f);
 	public static readonly int NUMBER_OF_HOLES = 3;
 
 	// template
