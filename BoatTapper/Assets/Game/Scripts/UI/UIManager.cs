@@ -31,6 +31,14 @@ public class UIManager : MonoBehaviour
 		{
 			UIManager.Instance = this;
 		}
+		
+		m_shownY = m_buttons[0].transform.position.y;
+		m_hiddenY = m_shownY + 0.25f;
+
+		GameLogic.Instance.OnStartGame += StartGame;
+		this.SnapHideUI(Side.Left);
+		this.SnapHideUI(Side.Right);
+		m_uiIsShown = false;
 	}
 	
 	private void Start ()
@@ -38,12 +46,12 @@ public class UIManager : MonoBehaviour
 		this.Assert<List<PlayerButton>>(m_buttons, "ERROR: m_buttons is null!");
 		this.UpdateButton(this.Buttons(Side.Left), true);
 		this.UpdateButton(this.Buttons(Side.Right), false);
+	}
 
-		m_shownY = m_buttons[0].transform.position.y;
-		m_hiddenY = m_shownY + 0.25f; 
-
+	private void StartGame()
+	{
 		// animate ui
-		//this.StartCoroutine(this.AnimateUI());
+		this.ShowUI();
 	}
 
 	// test
@@ -102,7 +110,7 @@ public class UIManager : MonoBehaviour
 	{
 		List<PlayerButton> buttons = this.Buttons(p_player);
 
-		Debug.LogError("ShowUI ButtonsCount:" + buttons.Count);
+//		Debug.LogError("ShowUI ButtonsCount:" + buttons.Count);
 
 		if (p_player == Side.Left) 
 		{
@@ -152,6 +160,21 @@ public class UIManager : MonoBehaviour
 				yield return new WaitForSeconds(0.10f);
 			}
 		}
+	}
+
+	private void SnapHideUI(Side p_player)
+	{
+		List<PlayerButton> buttons = this.Buttons(p_player);
+		
+		//Debug.LogError("HideUI ButtonsCount:" + buttons.Count);
+		
+		for (int i = 0; i < buttons.Count; i++)
+		{
+				PlayerButton button = buttons[i];
+				Vector3 hidePos = new Vector3(button.transform.position.x, m_hiddenY, 0);
+				button.transform.position = hidePos;
+		}
+
 	}
 
 	[Signal]

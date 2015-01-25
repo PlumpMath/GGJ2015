@@ -104,53 +104,66 @@ public class Hazard : MonoBehaviour
 	{
 		this.Log("Hazard::OnTriggerTap", "MyTap:{0} Tap:{1}", m_tapType, p_tap.TapType);
 
-		if(UIManager.Instance.Paused || (GameLogic.Instance.GameHasStarted && GameLogic.Instance.InGame))
+		if(UIManager.Instance.Paused)
 			return;
 
-		if(UIManager.Instance.HasAbility(TapType, WorldSideLocation))
+		if(GameLogic.Instance.GameHasStarted && GameLogic.Instance.InGame)
 		{
-			if (m_numberOfTaps <= 0) 
-			{ 
-				this.Destroy();
-				return; 
-			}
-			
-			m_numberOfTaps--;
-			
-			if (this.OnTapEvent != null)
+			if(UIManager.Instance.HasAbility(TapType, WorldSideLocation))
 			{
-				this.OnTapEvent(p_tap.TapType);
+				if (m_numberOfTaps <= 0) 
+				{ 
+					this.Destroy();
+					return; 
+				}
+				
+				m_numberOfTaps--;
+				
+				if (this.OnTapEvent != null)
+				{
+					this.OnTapEvent(p_tap.TapType);
+				}
 			}
+		}
+		else
+		{
+			Debug.Log("You already Lost.");
 		}
 	}
 
 	[Signal]
 	private void OnTriggerHold (HoldTrigger p_tap)
 	{
-		if(UIManager.Instance.Paused || (GameLogic.Instance.GameHasStarted && GameLogic.Instance.InGame))
+		if(UIManager.Instance.Paused)
 			return;
-
-		if(UIManager.Instance.HasAbility(TapType, WorldSideLocation))
+		if(GameLogic.Instance.GameHasStarted && GameLogic.Instance.InGame)
 		{
-			switch(p_tap.ButtonEvent)
+			if(UIManager.Instance.HasAbility(TapType, WorldSideLocation))
 			{
-				case ButtonEvent.BUTTON_DOWN:
-					if (this.OnButtonDownEvent != null)
-					{
-						m_isActive = false;
-						this.OnButtonDownEvent(p_tap.TapType);
-					}
-					break;
-				case ButtonEvent.BUTTON_UP:
-					if (this.OnButtonUpEvent != null)
-					{
-						m_isActive = true;
-						this.OnButtonUpEvent(p_tap.TapType);
-					}
-					break;
-				default:
-					break;
+				switch(p_tap.ButtonEvent)
+				{
+					case ButtonEvent.BUTTON_DOWN:
+						if (this.OnButtonDownEvent != null)
+						{
+							m_isActive = false;
+							this.OnButtonDownEvent(p_tap.TapType);
+						}
+						break;
+					case ButtonEvent.BUTTON_UP:
+						if (this.OnButtonUpEvent != null)
+						{
+							m_isActive = true;
+							this.OnButtonUpEvent(p_tap.TapType);
+						}
+						break;
+					default:
+						break;
+				}
 			}
+		}
+		else
+		{
+			Debug.Log("You already Lost.");
 		}
 	}
 	

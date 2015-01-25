@@ -45,7 +45,7 @@ public class BallSpawner : MonoBehaviour
 	private float m_targetInterval = EASY_SPAWN;
 	private List<CannonBall> m_balls;
 	private float m_interval;
-	private TapType[] HazardTypes = {TapType.Hammer, TapType.Stitch, TapType.Pail};
+	private TapType[] HazardTypes = {TapType.Hammer, TapType.Hammer, TapType.Hammer, TapType.Stitch, TapType.Stitch, TapType.Stitch,TapType.Stitch, TapType.Pail, TapType.Pail};
 
 	private void Start ()
 	{
@@ -90,7 +90,7 @@ public class BallSpawner : MonoBehaviour
 
 	private void Spawn ()
 	{
-		if(GameLogic.Instance.GameHasStarted && GameLogic.Instance.InGame)
+		if(!UIManager.Instance.Paused && (GameLogic.Instance.GameHasStarted && GameLogic.Instance.InGame))
 		{
 			GameObject obj = (GameObject)GameObject.Instantiate(m_ballTemplate.gameObject);
 			CannonBall ball = obj.GetComponent<CannonBall>();
@@ -100,7 +100,7 @@ public class BallSpawner : MonoBehaviour
 			ball.transform.position = this.transform.position;
 			
 			// setup type here
-			ball.TapType = TapType.Hammer;
+			ball.TapType = HazardTypes[UnityEngine.Random.Range(0, HazardTypes.Length)];//TapType.Hammer;
 			
 			m_balls.Add(ball);
 		}

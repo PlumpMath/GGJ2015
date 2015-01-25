@@ -48,6 +48,7 @@ public class GameLogic : MonoBehaviour
 	}
 
 	public event Action<float> OnGameProgressUpdate;
+	public event Action OnStartGame;
 
 	public static GameLogic Instance { get; private set; }
 
@@ -69,6 +70,8 @@ public class GameLogic : MonoBehaviour
 		m_targetSeaLevel = m_seaLevel.transform.position;
 		
 		UpdateSkyPosition(m_levelElapsedTime/Mathf.Max(0.1f, m_levelDuration));
+
+		StartCoroutine(StartGame());
 	}
 
 	private void Update ()
@@ -150,6 +153,31 @@ public class GameLogic : MonoBehaviour
 		return p_holes.FindAll(massCondition);
 	}
 
+	private void ResetGame()
+	{
+		m_levelElapsedTime = 0.0f;
+		Hazard[] forDestroy = m_hazards.ToArray();
+		foreach(Hazard hazard in forDestroy)
+		{
+			hazard.OnDestroy(hazard);
+		}
+		m_hazards.Clear();
+	}
+
+	public IEnumerator StartGame() 
+	{
+		
+		ResetGame();
+
+		if(OnStartGame != null)
+			OnStartGame();
+
+		yield return null;
+		//yield return StartCoroutine(UIManager.Instance.PrepareForBattle());
+
+		GameHasStarted = true;
+	}
+
 	public void UpdatePaused(bool p_paused)
 	{
 		Time.timeScale = p_paused ? 0.0f : 1.0f; // YES. I KNOW THIS IS SHITTY CODE.
@@ -176,6 +204,18 @@ public class GameLogic : MonoBehaviour
 		DamageShip(p_hazard);
 
 		return p_hazard;
+	}
+
+	public int Life {
+		get {
+			List<Hazard> activeHazards = this.GetActiveHazards(m_hazards, true);
+			List<Hazard> hazards = this.GetDamageOfTapType(activeHazards, TapType.Hammer);
+			List<Hazard> fireHazards = this.GetDamageOfTapType(activeHazards, TapType.Pail);
+			
+			hazards.AddRange(fireHazards);
+
+			return Mathf.Max(0, m_hazardLimit[(int) TapType.Hammer] - hazards.Count);
+		}
 	}
 
 	private void DamageShip(Hazard p_damage)
@@ -216,7 +256,7 @@ public class GameLogic : MonoBehaviour
 	private void AdjustSeaLevel (int p_hullHoles)
 	{
 		Debug.Log("p_hullHoles: " + p_hullHoles + " < " + m_hazardLimit[(int) TapType.Hammer]);
-		if(p_hullHoles < m_hazardLimit[(int) TapType.Hammer])
+		if(p_hullHoles <= m_hazardLimit[(int) TapType.Hammer])
 		{
 			m_targetSeaLevel = m_defaultSeaLevel - (UNIT_SEA_LEVEL * p_hullHoles);
 			m_targetSeaLevel.x = 0f;
