@@ -36,7 +36,7 @@ public class GameLogic : MonoBehaviour
 
 	[SerializeField]
 	private float m_levelDuration = 180f;
-	private float m_levelElapsedTime = 0f;
+	[SerializeField] private float m_levelElapsedTime = 0f;
 	private float m_levelProgression = 1.0f;
 
 	[SerializeField] private GameObject m_sky;

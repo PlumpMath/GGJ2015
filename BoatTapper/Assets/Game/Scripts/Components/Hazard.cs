@@ -104,7 +104,7 @@ public class Hazard : MonoBehaviour
 	{
 		this.Log("Hazard::OnTriggerTap", "MyTap:{0} Tap:{1}", m_tapType, p_tap.TapType);
 
-		if(UIManager.Instance.Paused)
+		if(UIManager.Instance.Paused || (GameLogic.Instance.GameHasStarted && GameLogic.Instance.InGame))
 			return;
 
 		if(UIManager.Instance.HasAbility(TapType, WorldSideLocation))
@@ -127,7 +127,7 @@ public class Hazard : MonoBehaviour
 	[Signal]
 	private void OnTriggerHold (HoldTrigger p_tap)
 	{
-		if(UIManager.Instance.Paused)
+		if(UIManager.Instance.Paused || (GameLogic.Instance.GameHasStarted && GameLogic.Instance.InGame))
 			return;
 
 		if(UIManager.Instance.HasAbility(TapType, WorldSideLocation))
