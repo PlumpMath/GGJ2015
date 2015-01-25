@@ -11,11 +11,6 @@ public class HoldTrigger : MonoBehaviour {
 	private TapType m_type;
 	private ButtonEvent m_buttonEvent = ButtonEvent.NONE;
 	public Signal OnTriggerAction = new Signal(typeof(HoldTrigger));
-	
-	private void OnClicked ()
-	{
-		OnTriggerAction.Invoke(this);
-	}
 
 	private void OnButtonDown()
 	{

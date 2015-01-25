@@ -42,6 +42,7 @@ public class CannonBall : MonoBehaviour
 		}
 		else
 		{
+			this.Explode();
 			this.Log("Hit:","NO BOX");
 		}
 	}

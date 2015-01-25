@@ -7,14 +7,13 @@ using Extensions;
 public class CollisionBox : MonoBehaviour
 {
 	[SerializeField] private GameObject m_onTriggerSpawnObj;
-	[SerializeField] private Hazard m_hazardTemplate;
+	//[SerializeField] private Hazard m_hazardTemplate;
+	[SerializeField] private TapType m_tapType;
 	private Hazard hazard;
 
 	public TapType TapType { 
 		get { 
-			if(m_hazardTemplate) 
-				return m_hazardTemplate.TapType; 
-			return TapType.Patch; 
+			return m_tapType; 
 		} 
 	}
 
@@ -35,18 +34,26 @@ public class CollisionBox : MonoBehaviour
 			GameObject go = (GameObject)GameObject.Instantiate(m_onTriggerSpawnObj.gameObject, newPosition, Quaternion.identity);
 		}
 
-		if(m_hazardTemplate && (!hazard || hazard == null))
+		if(!hazard || hazard == null)
 		{
-			Debug.Log("CollisionBox::CreateDamage::p_damage: " + m_hazardTemplate.name );
-			GameObject go = (GameObject)GameObject.Instantiate(m_hazardTemplate.gameObject, newPosition, Quaternion.identity);
-			hazard = go.GetComponent<Hazard>();
-			this.Log("CollisionBox::CreatHazard", "ScaleX:{0} Y:{1}", go.transform.localScale.x, go.transform.localScale.y);
-		}
+			Debug.Log("CollisionBox::CreateDamage::p_damage: " + m_tapType );
+			//GameObject go = (GameObject)GameObject.Instantiate(m_hazardTemplate.gameObject, newPosition, Quaternion.identity);
+			//hazard = go.GetComponent<Hazard>();
+			//this.Log("CollisionBox::CreatHazard", "ScaleX:{0} Y:{1}", go.transform.localScale.x, go.transform.localScale.y);
 
-		// randomize positions
-		if (GameLogic.Instance != null && hazard.TapType == this.TapType)
-		{
-			GameLogic.Instance.AddHazardOnShip(hazard);
+			// randomize positions
+			if (GameLogic.Instance != null)
+			{
+				hazard = GameLogic.Instance.CreateHazard(this.TapType);
+
+				if(hazard)
+				{
+					hazard.transform.position = newPosition;
+					hazard.transform.rotation = Quaternion.identity;
+					GameLogic.Instance.AddHazardOnShip(hazard);
+				}
+			}
+			
 		}
 
 	}

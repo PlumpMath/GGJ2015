@@ -43,8 +43,15 @@ public class GameLogic : MonoBehaviour
 	[SerializeField] private Vector3 m_startSkyPosition, m_endSkyPosition;
 
 	[SerializeField] public bool GameHasStarted;
+
+	[SerializeField] private TransformPool[] m_poolDictionary = new TransformPool[5];
+
+
 	public bool InGame { 
-		get { return m_levelElapsedTime <= m_levelDuration; } 
+		get { 
+			
+			Debug.Log("m_levelElapsedTime:"+ m_levelElapsedTime+" <= m_levelDuration: " + m_levelDuration + " : " + (m_levelElapsedTime <= m_levelDuration));
+			return m_levelElapsedTime <= m_levelDuration; } 
 	}
 
 	public event Action<float> OnGameProgressUpdate;
@@ -55,7 +62,14 @@ public class GameLogic : MonoBehaviour
 	[SerializeField]
 	private List<GameObject> m_prepareForBattleTemplate = new List<GameObject>();
 
-	private Queue<GameObject> PrepareForBattle = new Queue<GameObject>();
+	
+	[SerializeField]
+	private List<GameObject> m_gameOverTemplate = new List<GameObject>();
+
+	[SerializeField]
+	private List<GameObject> m_WinTemplate = new List<GameObject>();
+
+	private Queue<GameObject> PopupQueue = new Queue<GameObject>();
 
 	private void Awake () 
 	{
@@ -79,6 +93,8 @@ public class GameLogic : MonoBehaviour
 		ResetGame();
 
 		StartCoroutine( StartGame());
+
+
 	}
 
 	private void Update ()
@@ -170,19 +186,30 @@ public class GameLogic : MonoBehaviour
 		}
 		m_hazards.Clear();
 
-		PrepareForBattle.Clear();
+		PopupQueue.Clear();
 
 		for(int i = 0; i < m_prepareForBattleTemplate.Count; i++)
 		{
 			m_prepareForBattleTemplate[i].gameObject.SetActive(false);
-			PrepareForBattle.Enqueue(m_prepareForBattleTemplate[i]);
+			PopupQueue.Enqueue(m_prepareForBattleTemplate[i]);
 		}
+	}
+
+	public void Restart()
+	{
+		Application.LoadLevel(1);
 	}
 
 	public IEnumerator StartGame() 
 	{
 		
 		ResetGame();
+		HideWindowSet(m_gameOverTemplate);
+		HideWindowSet(m_WinTemplate);
+		
+		// set default values
+		m_seaLevel.transform.position = m_defaultSeaLevel;
+		m_targetSeaLevel = m_defaultSeaLevel;
 
 		if(OnStartGame != null)
 			OnStartGame();
@@ -190,6 +217,7 @@ public class GameLogic : MonoBehaviour
 		yield return new WaitForSeconds(2.5f);
 
 		PrepareForBattleAnimation();
+
 	}
 
 	public void PrepareForBattleAnimation()
@@ -199,13 +227,13 @@ public class GameLogic : MonoBehaviour
 			m_prepareForBattleTemplate[i].gameObject.SetActive(false);
 		}
 
-		if(PrepareForBattle.Count <= 0)
+		if(PopupQueue.Count <= 0)
 		{
 			StartCoroutine(StartEnemyFire());
 		}
 		else
 		{
-			GameObject target = PrepareForBattle.Dequeue();
+			GameObject target = PopupQueue.Dequeue();
 
 			target.SetActive(true);
 			Hashtable hash = new Hashtable();
@@ -223,6 +251,51 @@ public class GameLogic : MonoBehaviour
 		}
 
 		
+	}
+
+	public void PopUpWindowSet(List<GameObject> p_windowSet)
+	{
+		for(int i = 0; i < p_windowSet.Count; i++)
+		{
+			GameObject target = p_windowSet[i].gameObject;
+			target.SetActive(false);
+			PopupQueue.Enqueue(target);
+		}
+		QueueWindowPopup();
+	}
+
+	public void HideWindowSet(List<GameObject> p_windowSet)
+	{
+		for(int i = 0; i < p_windowSet.Count; i++)
+		{
+			GameObject target = p_windowSet[i].gameObject;
+			target.SetActive(false);
+		}
+	}
+
+	public void QueueWindowPopup()
+	{
+
+		if(PopupQueue.Count > 0)
+		{
+			GameObject target = PopupQueue.Dequeue();
+
+			target.SetActive(true);
+			Hashtable hash = new Hashtable();
+			hash["scale"] = Vector3.zero;
+			hash["easetype"] = iTween.EaseType.easeInOutBounce;
+			hash["time"] = 1.0f;
+			
+			hash["oncompletetarget"] = this.gameObject;
+			hash["oncomplete"] = "QueueWindowPopup";
+
+
+			// Animation Code Here
+			iTween.ScaleFrom(target, hash);
+			// Animation Ends Here
+		}
+
+
 	}
 
 	public IEnumerator StartEnemyFire()
@@ -243,6 +316,16 @@ public class GameLogic : MonoBehaviour
 		if(OnGameProgressUpdate != null)
 			OnGameProgressUpdate(p_levelCompletion);
 
+	}
+
+	public Hazard CreateHazard(TapType p_type)
+	{
+		int index = (int)p_type;
+		if(0 <= index && index < m_poolDictionary.Length){
+			Transform hazardTransform = m_poolDictionary[index].Pop();
+			return hazardTransform.GetComponent<Hazard>();
+		}
+		return null;
 	}
 
 	public Hazard AddHazardOnShip (Hazard p_hazard)
@@ -335,20 +418,32 @@ public class GameLogic : MonoBehaviour
 	{
 		m_hazards.Remove(p_damage);
 		DamageShip(p_damage);
-		GameObject.Destroy(p_damage.gameObject);
+
+		int index = (int)p_damage.TapType;
+		if(0 <= index && index < m_poolDictionary.Length)
+			m_poolDictionary[index].Push(p_damage.transform);
+
+		//GameObject.DestroyImmediate(p_damage.gameObject);
 	}
 
 	private void OnGameHasEnded ()
 	{
 		// Stuff Here
-		if(m_levelElapsedTime >= m_levelDuration)
+		if(GameHasStarted)
 		{
-			Debug.Log("YOU WIN!");
-			AdjustSeaLevel(0);
-		}
-		else
-		{
-			Debug.Log("FAKKIN LOSER!");
+			if(m_levelElapsedTime >= m_levelDuration)
+			{
+				Debug.Log("YOU WIN!");
+				AdjustSeaLevel(0);
+
+				PopUpWindowSet(m_WinTemplate);
+			}
+			else
+			{
+				Debug.Log("FAKKIN LOSER!");
+				
+				PopUpWindowSet(m_gameOverTemplate);
+			}
 		}
 
 		

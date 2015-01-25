@@ -169,6 +169,7 @@ public class Hazard : MonoBehaviour
 	
 	private void Destroy ()
 	{
+		Debug.Log("Hazard::Destroy: " + gameObject.name);
 		if (this.OnDestroy == null) { return; }
 		this.OnDestroy(this);
 	}
