@@ -47,6 +47,8 @@ public class GameLogic : MonoBehaviour
 		get { return m_levelElapsedTime <= m_levelDuration; } 
 	}
 
+	public event Action<float> OnGameProgressUpdate;
+
 	public static GameLogic Instance { get; private set; }
 
 	private void Awake () 
@@ -156,6 +158,9 @@ public class GameLogic : MonoBehaviour
 	private void UpdateSkyPosition(float p_levelCompletion)
 	{
 		m_sky.transform.localPosition = Vector3.Lerp(m_startSkyPosition, m_endSkyPosition, p_levelCompletion);
+		if(OnGameProgressUpdate != null)
+			OnGameProgressUpdate(p_levelCompletion);
+
 	}
 
 	public Hazard AddHazardOnShip (Hazard p_hazard)
