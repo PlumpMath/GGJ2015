@@ -10,12 +10,12 @@ public class CameraPan : MonoBehaviour
 	private void Awake ()
 	{
 		this.transform.position = m_startingPoint;
-		//this.StartGame();
+		GameLogic.Instance.OnStartGame += StartGame;
 	}
 
 	private void Start ()
 	{
-		GameLogic.Instance.OnStartGame += StartGame;
+		//this.StartGame();
 	}
 
 	private void StartGame ()
