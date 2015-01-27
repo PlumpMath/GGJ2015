@@ -39,6 +39,10 @@ public class CannonBall : MonoBehaviour
 				box.CreateHazard(this.transform.position);
 				this.Explode();
 			}
+			else if(box.TapType == TapType.None)
+			{
+				this.Explode();
+			}
 		}
 		else
 		{

@@ -34,7 +34,7 @@ public class CollisionBox : MonoBehaviour
 			GameObject go = (GameObject)GameObject.Instantiate(m_onTriggerSpawnObj.gameObject, newPosition, Quaternion.identity);
 		}
 
-		if(!hazard || hazard == null)
+		if(!hazard || hazard == null || !hazard.gameObject.activeSelf)
 		{
 			Debug.Log("CollisionBox::CreateDamage::p_damage: " + m_tapType );
 			//GameObject go = (GameObject)GameObject.Instantiate(m_hazardTemplate.gameObject, newPosition, Quaternion.identity);

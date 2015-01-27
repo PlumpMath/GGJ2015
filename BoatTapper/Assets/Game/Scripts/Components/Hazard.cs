@@ -10,6 +10,7 @@ public enum TapType
 	Move,
 	Pail,
 	Stitch,
+	None
 }
 
 public class Hazard : MonoBehaviour 
